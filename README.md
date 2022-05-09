@@ -7,3 +7,7 @@ Feature selection with Stepwise regression algorithm
 
 ## Why
 I wanted to try the [Stepwise regression algorithm](https://en.wikipedia.org/wiki/Stepwise_regression) for feature selection. 
+
+Used _data(airquality)_ data for the test:
+
+![correlation matrix plot](/images/plot1.jpg)
