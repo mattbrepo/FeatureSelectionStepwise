@@ -1,5 +1,5 @@
 library("MASS")
-library("coefplot")
+library(corrplot)
 
 #
 # Feature Selection with MASS Package
@@ -7,6 +7,9 @@ library("coefplot")
 
 data(airquality)
 ozone <- subset(na.omit(airquality))
+
+par(mfrow=c(1, 1))
+corrplot(cor(ozone))
 
 lm1 <- lm(Ozone ~ 1, data = ozone) # the intercept value is equal to mean(ozone$Ozone)
 colnames(lm1$model)
