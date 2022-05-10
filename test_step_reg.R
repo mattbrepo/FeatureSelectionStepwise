@@ -1,19 +1,64 @@
-library("MASS")
+library(MASS)
 library(corrplot)
 
+removeCorr <- function(data, corr_thr) {
+  # temporary y remove 
+  data_exy <- data[, names(data) != "y"]
+  
+  # calculate correlation
+  corr_data <- cor(data_exy)
+  # set the upper triangle to zero
+  corr_data[!lower.tri(corr_data)] <- 0
+  
+  # remove correlated columns
+  data_exy_new <- data_exy[, !apply(corr_data, 2, function(x) any(abs(x) > corr_thr, na.rm = TRUE))]
+  
+  # recombine data
+  data_new <- cbind(mydata$y, data_exy_new)
+  names(data_new)[1] <- "y"
+  return(data_new)
+}
+
+backwardElimination <- function(data, pvalue_thr) {
+  numVars = length(colnames(data)) - 1 # minus y
+  for(i in 1:numVars) {
+    # use all available variables
+    lm_tmp <- lm(y ~ ., data = data)
+    
+    # extract p-values
+    pvs <- summary(lm_tmp)$coefficients[, 4]
+    if (max(pvs) > pvalue_thr) {
+      for(j in 1:length(pvs)) {
+        if (pvs[j] == max(pvs)) {
+          data <- data[-c(j)]
+          break
+        }
+      }
+    }
+  }
+  
+  lm_final <- lm(y ~ ., data = data)
+  return(lm_final)
+}
+
 #
-# Feature Selection with MASS Package
+# Feature Selection with step regression
 #
 
 data(airquality)
-ozone <- subset(na.omit(airquality))
+mydata <- subset(na.omit(airquality))
+names(mydata)[names(mydata) == "Ozone"] <- "y"
 
 par(mfrow=c(1, 1))
-corrplot(cor(ozone))
+corrplot(cor(mydata))
 
-lm1 <- lm(Ozone ~ 1, data = ozone) # the intercept value is equal to mean(ozone$Ozone)
+# -----------------------
+# ------ MASS Package
+# -----------------------
+
+lm1 <- lm(y ~ 1, data = mydata) # the intercept value is equal to mean(mydata$y)
 colnames(lm1$model)
-lm_full <- lm(Ozone ~ ., data = ozone)
+lm_full <- lm(y ~ ., data = mydata)
 colnames(lm_full$model)
 
 # --- both direction
@@ -36,3 +81,17 @@ par(mfrow=c(3, 1))
 barplot(lm_step_both$coefficients[2:length(lm_step_both$coefficients)])
 barplot(lm_step_f$coefficients[2:length(lm_step_f$coefficients)])
 barplot(lm_step_b$coefficients[2:length(lm_step_b$coefficients)])
+
+# -----------------------
+# ------ another approach (check https://towardsdatascience.com/feature-selection-correlation-and-p-value-da8921bfb3cf)
+# -----------------------
+
+# remove correlated columns (one of the two)
+mydata_nc <- removeCorr(mydata, 0.9)
+
+# backward elimination
+lm_step_b2 <- backwardElimination(mydata_nc, 0.05)
+
+summary(lm_step_b2)
+colnames(lm_step_b2$model)
+
