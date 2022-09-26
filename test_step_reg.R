@@ -77,10 +77,10 @@ summary(lm_step_b)
 colnames(lm_step_b$model)
 
 # show barplot coefficients (excluded intercept)
-par(mfrow=c(3, 1))
-barplot(lm_step_both$coefficients[2:length(lm_step_both$coefficients)])
-barplot(lm_step_f$coefficients[2:length(lm_step_f$coefficients)])
-barplot(lm_step_b$coefficients[2:length(lm_step_b$coefficients)])
+par(mfrow=c(4, 1))
+barplot(lm_step_both$coefficients[2:length(lm_step_both$coefficients)], main="both direction")
+barplot(lm_step_f$coefficients[2:length(lm_step_f$coefficients)], main="forward direction")
+barplot(lm_step_b$coefficients[2:length(lm_step_b$coefficients)], main="backward direction")
 
 # -----------------------
 # ------ another approach (check https://towardsdatascience.com/feature-selection-correlation-and-p-value-da8921bfb3cf)
@@ -94,4 +94,5 @@ lm_step_b2 <- backwardElimination(mydata_nc, 0.05)
 
 summary(lm_step_b2)
 colnames(lm_step_b2$model)
+barplot(lm_step_b2$coefficients[2:length(lm_step_b2$coefficients)], main="alternative approach")
 
